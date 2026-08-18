@@ -1,0 +1,10 @@
+**/node_modules/
+desktop/runtime/
+desktop/release/
+*.tgz
+.env
+.env.*
+*.log
+*.tmp
+.DS_Store
+Thumbs.db

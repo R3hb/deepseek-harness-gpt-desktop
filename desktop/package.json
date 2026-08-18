@@ -1,0 +1,61 @@
+{
+  "name": "deepseek-harness-gpt-desktop",
+  "version": "1.1.0",
+  "description": "DeepSeek Harness desktop app driven by GPT through official Codex ChatGPT sign-in.",
+  "main": "main.js",
+  "scripts": {
+    "prepare:runtime": "node scripts/prepare-runtime.mjs",
+    "start": "npm run prepare:runtime && electron .",
+    "test": "npm --prefix codex-llm-plugin install --ignore-scripts --no-audit --no-fund && npm --prefix codex-llm-plugin test && node --check main.js && node --check scripts/prepare-runtime.mjs",
+    "dist:dir": "npm run prepare:runtime && electron-builder --win dir",
+    "dist": "npm run prepare:runtime && electron-builder --win nsis"
+  },
+  "author": "R3hb",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "43.4.0",
+    "electron-builder": "26.15.3"
+  },
+  "build": {
+    "appId": "com.r3hb.deepseek-harness-gpt",
+    "productName": "DeepSeek Harness GPT",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "assets/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "runtime/dsh/package.json",
+        "to": "dsh/package.json"
+      },
+      {
+        "from": "runtime/dsh/package-lock.json",
+        "to": "dsh/package-lock.json"
+      },
+      {
+        "from": "runtime/dsh/node_modules",
+        "to": "dsh/node_modules"
+      },
+      {
+        "from": "codex.patch.yml",
+        "to": "codex.patch.yml"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "artifactName": "DeepSeek-Harness-GPT-Setup-${version}.${ext}",
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

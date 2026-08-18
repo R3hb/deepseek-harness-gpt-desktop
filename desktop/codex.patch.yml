@@ -1,0 +1,21 @@
+# Desktop-only overlay: keep the stock DeepSeek Harness web client and session
+# services, add the official Codex-backed provider, and make it the default.
+- id: agent-default-model
+  config:
+    provider: openai-codex
+    model: gpt-5.6-sol
+    reasoningEffort: medium
+
+# Keep the ChatGPT desktop edition's model choice separate from the existing
+# DeepSeek-oriented settings while sharing the same sessions and attachments.
+- id: settings
+  config:
+    path: !!js dshHomePath('chatgpt-settings.yaml')
+
+- insert:
+    - id: llm-codex-chatgpt
+      name: __DSH_CODEX_PLUGIN_URL__
+      config:
+        sandboxMode: workspace-write
+        networkAccessEnabled: false
+        emitReasoning: true

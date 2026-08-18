@@ -1,0 +1,28 @@
+{
+  "name": "@local/dsh-llm-codex-chatgpt",
+  "version": "0.1.2",
+  "description": "DeepSeek Harness LLM adapter backed by the official Codex SDK and ChatGPT sign-in.",
+  "type": "module",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "index.js",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "test": "node --test test.mjs"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@deepseek-ai/schemastery": "^3.18.1",
+    "@openai/codex-sdk": "0.147.0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.1",
+    "@deepseek-ai/dsh-llm": "^0.1.0-rc.7"
+  }
+}
