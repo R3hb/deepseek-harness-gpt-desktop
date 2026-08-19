@@ -1,0 +1,41 @@
+name: publish-release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to receive the build artifacts
+        required: true
+        type: string
+      mac_run_id:
+        description: Successful build-macos run ID
+        required: true
+        type: string
+      windows_run_id:
+        description: Successful build-windows run ID
+        required: true
+        type: string
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v8
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.mac_run_id }}
+          path: release-assets
+      - uses: actions/download-artifact@v8
+        with:
+          github-token: ${{ github.token }}
+          run-id: ${{ inputs.windows_run_id }}
+          path: release-assets
+      - name: Upload assets to GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: ${{ inputs.tag }}
+        run: gh release upload "$RELEASE_TAG" release-assets/*/* --clobber
