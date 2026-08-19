@@ -1,6 +1,6 @@
 {
   "name": "@local/dsh-llm-codex-chatgpt",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "DeepSeek Harness LLM adapter backed by the official Codex SDK and ChatGPT sign-in.",
   "type": "module",
   "main": "index.js",

@@ -6,7 +6,9 @@
 
 import { createHash } from 'node:crypto'
 import { existsSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { mkdtemp, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join, resolve } from 'node:path'
 import { Codex } from '@openai/codex-sdk'
 import z from '@deepseek-ai/schemastery'
 import {
@@ -27,6 +29,12 @@ const CONTEXT_WINDOW = 1_050_000
 const DEFAULT_REASONING_EFFORT = 'medium'
 const REASONING_EFFORTS = ['minimal', 'low', 'medium', 'high', 'xhigh']
 const SECRET_NAME = /KEY|SECRET|TOKEN|PASSWORD/i
+const IMAGE_EXTENSIONS = Object.freeze({
+  'image/png': '.png',
+  'image/jpeg': '.jpg',
+  'image/webp': '.webp',
+  'image/gif': '.gif',
+})
 
 export const MODELS = Object.freeze([
   Object.freeze({
@@ -65,7 +73,7 @@ export function codexEnvironment(source = process.env) {
   return result
 }
 
-function contentText(blocks) {
+function contentText(blocks, imageRefs) {
   const result = []
   for (const block of blocks) {
     switch (block.type) {
@@ -88,14 +96,23 @@ function contentText(blocks) {
           type: 'tool-result',
           toolCallId: block.toolCallId,
           isError: block.isError === true,
-          content: contentText(block.content),
+          content: contentText(block.content, imageRefs),
         })
         break
-      case 'image':
-        throw new LlmError(
-          'The ChatGPT subscription bridge currently accepts text conversations only.',
-          'UNSUPPORTED_CONTENT',
-        )
+      case 'image': {
+        const imageIndex = imageRefs.length
+        imageRefs.push(block.attachment)
+        result.push({
+          type: 'image',
+          imageIndex,
+          attachmentId: String(block.attachment.attachmentId),
+          mediaType: block.attachment.mediaType,
+          width: block.attachment.width,
+          height: block.attachment.height,
+          ...(block.attachment.name === undefined ? {} : { name: block.attachment.name }),
+        })
+        break
+      }
       default:
         throw new LlmError(
           `The ChatGPT subscription bridge cannot serialize content block "${String(block.type)}".`,
@@ -106,10 +123,10 @@ function contentText(blocks) {
   return result
 }
 
-function transcript(messages) {
+function transcript(messages, imageRefs) {
   return messages.map(message => ({
     role: message.role,
-    content: contentText(message.content),
+    content: contentText(message.content, imageRefs),
   }))
 }
 
@@ -172,16 +189,69 @@ const CONTINUATION_INSTRUCTION = [
 ].join(' ')
 
 /** Build the exact text submitted to a new or resumed Codex thread. */
-export function codexPrompt(options, resolvedContinuation) {
+export function codexPrompt(options, resolvedContinuation, imageRefs = []) {
   if (resolvedContinuation.threadId !== undefined) {
     return `${CONTINUATION_INSTRUCTION}\n\n${JSON.stringify({
-      messages: transcript(resolvedContinuation.messages),
+      messages: transcript(resolvedContinuation.messages, imageRefs),
     })}`
   }
   return `${FIRST_TURN_INSTRUCTION}\n\n${JSON.stringify({
     system: options.purpose === undefined ? '' : (options.system ?? ''),
-    messages: transcript(resolvedContinuation.messages),
+    messages: transcript(resolvedContinuation.messages, imageRefs),
   })}`
+}
+
+async function prepareCodexInput(prompt, imageRefs, attachments, signal) {
+  if (imageRefs.length === 0) {
+    return { input: prompt, cleanup: async () => {} }
+  }
+  if (attachments === undefined) {
+    throw new LlmError(
+      'ChatGPT image input requires the DeepSeek Harness attachment service.',
+      'UNSUPPORTED_CONTENT',
+    )
+  }
+
+  const directory = await mkdtemp(join(tmpdir(), 'dsh-codex-images-'))
+  let cleaned = false
+  const cleanup = async () => {
+    if (cleaned) return
+    cleaned = true
+    try {
+      await rm(directory, {
+        recursive: true,
+        force: true,
+        maxRetries: 3,
+        retryDelay: 100,
+      })
+    } catch {
+      // A cleanup failure must not replace the model response or its real error.
+    }
+  }
+
+  try {
+    const input = [{
+      type: 'text',
+      text: `${prompt}\n\nAttached local images follow in imageIndex order.`,
+    }]
+    for (let index = 0; index < imageRefs.length; index += 1) {
+      const stored = await attachments.readImage(imageRefs[index], signal)
+      const extension = IMAGE_EXTENSIONS[stored.ref.mediaType]
+      if (extension === undefined) {
+        throw new LlmError(
+          `Codex does not support Harness image type "${stored.ref.mediaType}".`,
+          'UNSUPPORTED_CONTENT',
+        )
+      }
+      const imagePath = join(directory, `${String(index).padStart(3, '0')}${extension}`)
+      await writeFile(imagePath, stored.data, { mode: 0o600 })
+      input.push({ type: 'local_image', path: imagePath })
+    }
+    return { input, cleanup }
+  } catch (error) {
+    await cleanup()
+    throw error
+  }
 }
 
 function normalizeError(value, signal) {
@@ -243,6 +313,7 @@ export class CodexChatGptAdapter extends LlmAdapter {
       sandboxMode: config.sandboxMode ?? 'workspace-write',
       networkAccessEnabled: config.networkAccessEnabled ?? false,
       emitReasoning: config.emitReasoning ?? true,
+      resolveAttachments: config.resolveAttachments,
     }
     if (!existsSync(this.config.workingDirectory)) {
       throw new Error(
@@ -260,7 +331,7 @@ export class CodexChatGptAdapter extends LlmAdapter {
     return Promise.resolve(MODELS.map(model => ({
       provider,
       ...model,
-      inputModalities: ['text'],
+      inputModalities: ['text', 'image'],
     })))
   }
 
@@ -271,7 +342,7 @@ export class CodexChatGptAdapter extends LlmAdapter {
       id: model,
       name: known?.name ?? model,
       ...(known?.description === undefined ? {} : { description: known.description }),
-      inputModalities: ['text'],
+      inputModalities: ['text', 'image'],
       context: { contextWindow: CONTEXT_WINDOW },
       reasoning: {
         efforts: REASONING_EFFORTS.map(id => ({
@@ -290,7 +361,8 @@ export class CodexChatGptAdapter extends LlmAdapter {
     const forwardedSystem = options.purpose === undefined ? '' : options.system
     const messages = bridgedMessages(options)
     const resolvedContinuation = continuation(messages, forwardedSystem)
-    const prompt = codexPrompt({ ...options, messages }, resolvedContinuation)
+    const imageRefs = []
+    const prompt = codexPrompt({ ...options, messages }, resolvedContinuation, imageRefs)
     const threadOptions = {
       model: options.model,
       workingDirectory: this.config.workingDirectory,
@@ -304,16 +376,21 @@ export class CodexChatGptAdapter extends LlmAdapter {
 
     let streamed
     let thread
+    let cleanupInput = async () => {}
     try {
+      const attachments = imageRefs.length === 0 ? undefined : this.config.resolveAttachments?.()
+      const prepared = await prepareCodexInput(prompt, imageRefs, attachments, options.signal)
+      cleanupInput = prepared.cleanup
       const codex = this.createCodex({ env: codexEnvironment() })
       thread = resolvedContinuation.threadId === undefined
         ? codex.startThread(threadOptions)
         : codex.resumeThread(resolvedContinuation.threadId, threadOptions)
       streamed = await thread.runStreamed(
-        prompt,
+        prepared.input,
         options.signal === undefined ? undefined : { signal: options.signal },
       )
     } catch (error) {
+      await cleanupInput()
       throw normalizeError(error, options.signal)
     }
 
@@ -357,6 +434,8 @@ export class CodexChatGptAdapter extends LlmAdapter {
       }
     } catch (error) {
       throw normalizeError(error, options.signal)
+    } finally {
+      await cleanupInput()
     }
 
     if (!completed) {
@@ -398,5 +477,8 @@ export class CodexChatGptAdapter extends LlmAdapter {
 
 /** Register the ChatGPT-backed Codex provider route. */
 export function apply(ctx, config = {}) {
-  ctx.llm.registerAdapter([PROVIDER], new CodexChatGptAdapter(config))
+  ctx.llm.registerAdapter([PROVIDER], new CodexChatGptAdapter({
+    ...config,
+    resolveAttachments: () => ctx.get('attachments'),
+  }))
 }

@@ -1,3 +1,10 @@
+# v1.3.0
+
+- 为 GPT-5.6 Sol、Terra、Luna 声明图片输入能力，修复前端误报“当前模型不支持图片”。
+- 将 Harness 的 PNG、JPEG、WebP、GIF 附件转为 Codex SDK 的本地图片输入。
+- 图片临时文件仅在当前模型请求期间存在，响应结束或失败后自动清理。
+- 增加图片能力声明、附件字节转发和临时文件清理测试。
+
 # v1.2.0
 
 - 新增 macOS Apple Silicon 与 Intel 双架构安装包。

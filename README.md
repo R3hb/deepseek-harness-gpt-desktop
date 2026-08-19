@@ -12,6 +12,7 @@
 - 增加 `OpenAI Codex (ChatGPT)` 模型提供方。
 - 支持 GPT-5.6 Sol、Terra 和 Luna。
 - 直接复用 Codex 的 ChatGPT 登录，无需另外填写 OpenAI API Key。
+- 支持在 Harness 中粘贴或添加 PNG、JPEG、WebP、GIF 图片并交给 GPT 识别。
 - 使用 Electron 打包成 Windows 和 macOS 桌面应用，关闭窗口时一并清理本地服务。
 - DeepSeek V4 Flash 与 V4 Pro 仍然保留，需要时可以随时切回。
 
@@ -68,13 +69,13 @@ npm start
 
 `desktop/codex-llm-plugin` 注册了 `openai-codex` 模型路由。每次 Harness 对话通过官方 `@openai/codex-sdk` 进入 Codex，认证与工具执行都由 Codex 管理。
 
-普通对话只转发用户消息、历史模型回复与工具结果。Harness 注入的整套工具目录会留在自己的会话日志里，不会重复发给 Codex。这样可以少耗一部分输入 token，同时避免让模型误以为那批 Harness 工具可以直接调用。
+普通对话转发用户消息、图片附件、历史模型回复与工具结果。图片从 Harness 的附件存储中校验读取，临时写入本地文件交给 Codex SDK，模型响应结束后立即删除。Harness 注入的整套工具目录会留在自己的会话日志里，不会重复发给 Codex。这样可以少耗一部分输入 token，同时避免让模型误以为那批 Harness 工具可以直接调用。
 
 适配器会把 Codex thread id 写入 Harness 的回放元数据。同一会话下一轮会续接原 thread，多轮上下文不会丢。
 
 ## 已知限制
 
-- 当前桥接只接收文本消息，Harness 图片附件尚未转给 Codex。
+- 当前只支持图片输入，不支持音频和视频附件。
 - Codex 自带 Agent 指令和工具，单轮仍有较大的上下文基线。
 - 本机实测 GPT-5.6 Sol 首次响应约需五十到六十秒，速度会受账号、网络与任务复杂度影响。
 - 自行构建的安装包没有商业代码签名证书，Windows 可能显示未知发布者。

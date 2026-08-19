@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict'
+import { access, readFile } from 'node:fs/promises'
 import test from 'node:test'
 import {
   CodexChatGptAdapter,
@@ -21,11 +22,12 @@ function eventStream(events) {
   })()
 }
 
-function fakeCodex(events, calls) {
+function fakeCodex(events, calls, onRun) {
   const thread = {
     id: null,
     async runStreamed(prompt) {
       calls.push({ operation: 'run', prompt })
+      await onRun?.(prompt)
       return { events: eventStream(events) }
     },
   }
@@ -185,20 +187,74 @@ test('resumes only when the latest assistant carries matching replay state', asy
   assert.doesNotMatch(calls[1].prompt, /First\./)
 })
 
-test('rejects image content before starting Codex', async () => {
+test('advertises image input for every ChatGPT-backed model', async () => {
+  const adapter = new CodexChatGptAdapter({ workingDirectory: process.cwd() })
+  const listed = await adapter.listModels(PROVIDER)
+  assert.ok(listed.length > 0)
+  assert.ok(listed.every(model => model.inputModalities.includes('image')))
+  const resolved = await adapter.resolveModel(PROVIDER, 'gpt-5.6-sol')
+  assert.deepEqual(resolved.inputModalities, ['text', 'image'])
+})
+
+test('materializes Harness image attachments as Codex local image inputs', async () => {
+  const calls = []
+  const attachment = {
+    attachmentId: 'image-1',
+    mediaType: 'image/png',
+    bytes: 4,
+    width: 1,
+    height: 1,
+    name: 'pixel.png',
+  }
+  let materializedPath
   const adapter = new CodexChatGptAdapter(
-    { workingDirectory: process.cwd() },
-    () => { throw new Error('must not start') },
+    {
+      workingDirectory: process.cwd(),
+      resolveAttachments: () => ({
+        async readImage(ref) {
+          assert.equal(ref, attachment)
+          return { ref, data: new Uint8Array([1, 2, 3, 4]) }
+        },
+      }),
+    },
+    () => fakeCodex([
+      { type: 'thread.started', thread_id: 'thread-image' },
+      { type: 'item.completed', item: { id: 'a', type: 'agent_message', text: 'I see it.' } },
+      {
+        type: 'turn.completed',
+        usage: {
+          input_tokens: 1,
+          cached_input_tokens: 0,
+          cache_write_input_tokens: 0,
+          output_tokens: 1,
+          reasoning_output_tokens: 0,
+        },
+      },
+    ], calls, async input => {
+      materializedPath = input[1].path
+      assert.deepEqual([...await readFile(materializedPath)], [1, 2, 3, 4])
+    }),
   )
-  const stream = adapter.stream({
+  await collect(adapter.stream({
     provider: PROVIDER,
     model: 'gpt-5.6-sol',
     messages: [{
       id: 'image',
       role: 'user',
       source: { kind: 'user' },
-      content: [{ type: 'image', attachment: { id: 'x' } }],
+      content: [
+        { type: 'image', attachment },
+        { type: 'text', text: 'What is this?' },
+      ],
     }],
-  })
-  await assert.rejects(collect(stream), error => error.code === 'UNSUPPORTED_CONTENT')
+  }))
+
+  const input = calls.find(call => call.operation === 'run').prompt
+  assert.ok(Array.isArray(input))
+  assert.equal(input[0].type, 'text')
+  assert.match(input[0].text, /What is this\?/)
+  assert.match(input[0].text, /"imageIndex":0/)
+  assert.equal(input[1].type, 'local_image')
+  assert.match(input[1].path, /\.png$/)
+  await assert.rejects(access(materializedPath))
 })
