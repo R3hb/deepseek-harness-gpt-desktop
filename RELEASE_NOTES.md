@@ -2,6 +2,7 @@
 
 - 增加 DeepSeek Harness rc.7 社区插件兼容性记录，列出 31 个 Web 扩展依赖和 3 个独立组件的验证版本。
 - 记录 Pet 与 ModLens 的 rc.7 设置卡片兼容性处理，以及生产依赖审计结果。
+- 标注 `@ysyyhhh/dsh-pet@0.3.0` 在 Electron Windows 运行时的 N-API 崩溃问题，桌面配置应停用该 bundle。
 - 扩充第三方项目说明，逐项鸣谢本轮验证涉及的社区仓库作者和 NPM 维护者。
 
 # v1.4.0

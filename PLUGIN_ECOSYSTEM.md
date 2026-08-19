@@ -1,6 +1,6 @@
 # 社区插件兼容性记录
 
-这份记录来自 2026 年 8 月 19 日的本机验证。测试环境使用 Windows x64、Node.js 24.14.0、DeepSeek Harness 0.1.0-rc.7 和本项目的 Codex 桌面补丁。核对入口来自 [DSH 插件全景指南](https://www.bilibili.com/opus/1238092080534781961)。
+这份记录来自 2026 年 8 月 19 日的本机验证。测试环境使用 Windows x64、Node.js 24.14.0、DeepSeek Harness 0.1.0-rc.7 和本项目的 Codex 桌面补丁。Web 验证使用普通 Node.js 运行时，随后另用 Electron 桌面运行时复测。核对入口来自 [DSH 插件全景指南](https://www.bilibili.com/opus/1238092080534781961)。
 
 这里记录兼容性和来源。桌面安装包没有预装这些第三方插件，也不会替用户启用 SSH、Computer Use 等高权限能力。
 
@@ -9,7 +9,7 @@
 | 检查 | 结果 |
 | --- | --- |
 | Web 扩展依赖 | 31 个 |
-| DSH 组合 bundle | 31 项，含 2 个官方基础 bundle |
+| DSH 组合 bundle | Web 验证 31 项，桌面安全配置 30 项，均含 2 个官方基础 bundle |
 | 独立组件 | DSH TUI、dsh-doctor、Anchored Standard |
 | 首页和设置页 | 正常渲染 |
 | 插件页面 | 正常打开，显示 206 个 DSH 内部及扩展组件 |
@@ -33,7 +33,7 @@
 | `@liustack/modsearch` | 5.4.3 | [liustack/modsearch](https://github.com/liustack/modsearch) |
 | `@max-null/dsh-memory` | 0.2.2 | [Max-Null/dsh-memory](https://github.com/Max-Null/dsh-memory) |
 | `@omdsh-dev/dsh-genui` | 0.8.7 | [omdsh-dev/dsh-genui](https://github.com/omdsh-dev/dsh-genui) |
-| `@ysyyhhh/dsh-pet` | 0.3.0 | [ysyyhhh/dsh-pet](https://github.com/ysyyhhh/dsh-pet) |
+| `@ysyyhhh/dsh-pet` | 0.3.0，桌面端停用 | [ysyyhhh/dsh-pet](https://github.com/ysyyhhh/dsh-pet) |
 | `dsh-at-file` | 0.6.4 | [omdsh-dev/dsh-at-file](https://github.com/omdsh-dev/dsh-at-file) |
 | `dsh-better-sidebar` | 0.13.1 | [omdsh-dev/DSH-better-sidebar](https://github.com/omdsh-dev/DSH-better-sidebar) |
 | `dsh-builtin-browser` | 0.1.15 | [wqty123/dsh-browser](https://github.com/wqty123/dsh-browser) |
@@ -63,7 +63,9 @@
 
 ## rc.7 兼容性处理
 
-`@ysyyhhh/dsh-pet` 和 `@liustack/modlens` 的设置卡片需要为 `settings.plugin.item` 注册补上稳定的 `key`。测试环境使用了最小兼容性修补，修补后两者能与其余插件同时启动。
+`@ysyyhhh/dsh-pet` 和 `@liustack/modlens` 的设置卡片需要为 `settings.plugin.item` 注册补上稳定的 `key`。这项最小修补能让两者在普通 Node.js Web 运行时完成加载。
+
+Electron 桌面运行时还有一项独立问题。`@ysyyhhh/dsh-pet@0.3.0` 创建 Windows 原生句柄时会触发 N-API 致命错误，DSH 子进程随后以 code 134 退出。桌面安全配置保留插件源码和依赖，但从自动加载 bundle 中移除了这一项。`@linxin666/dsh-web-ui-all` 自带的鲸鱼娘仍可使用。
 
 这项处理只存在于本轮本地测试副本。上游发布新版本后，应当优先使用上游修复，避免长期维护分叉。
 
