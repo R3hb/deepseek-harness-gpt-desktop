@@ -44,6 +44,12 @@
 - 使用 Electron 打包成 Windows 和 macOS 桌面应用，关闭窗口时一并清理本地服务。
 - DeepSeek V4 Flash 与 V4 Pro 仍然保留，需要时可以随时切回。
 
+## 社区插件兼容性
+
+2026 年 8 月 19 日，我在 Windows x64 和 DeepSeek Harness rc.7 上跑了一轮社区插件兼容性测试。Web 配置装入了 31 个扩展依赖，另外验证了 DSH TUI、dsh-doctor 和 Anchored Standard。首页、设置页、插件页和桌面宠物都能正常打开，插件清单显示 206 个 DSH 内部及扩展组件，dsh-doctor 的 9 项检查全部通过。
+
+这批插件没有直接塞进桌面安装包。第三方插件会在本机执行代码，有些还会访问终端、SSH、浏览器和文件系统。桌面版保持精简安装，用户按需要选择插件。完整版本清单、兼容性修补、审计结果和仓库作者见 [社区插件兼容性记录](PLUGIN_ECOSYSTEM.md)。
+
 官方 Codex CLI 支持使用 ChatGPT 登录，Codex SDK 也允许嵌入本地应用。ChatGPT 计划中的 Codex 用量、模型权限与速率限制仍按 OpenAI 当前规则执行。
 
 - [Codex CLI](https://learn.chatgpt.com/docs/codex/cli)
@@ -120,6 +126,8 @@ npm start
 
 - [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness)
 - [openai/codex](https://github.com/openai/codex)
+
+这轮插件测试用到了许多社区作者公开维护的项目。感谢名单和对应仓库集中放在 [NOTICE.md](NOTICE.md)，方便逐项核对来源与许可证。
 
 这是个人做的社区版本，和 DeepSeek、深度求索、OpenAI 都没有官方关系。欢迎提 Issue，也欢迎一起把这个桥接做得更顺手。
 
