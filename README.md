@@ -10,6 +10,30 @@
 
 ![DeepSeek Harness 同时选择 GPT 与 DeepSeek 模型](assets/model-selector.png)
 
+## 和官方 DSH、Codex 怎么选
+
+这个项目没有打算替代 DeepSeek Harness 或 Codex。它更适合已经在用 ChatGPT 计划，同时又喜欢 DSH 工作区、会话管理和模型切换方式的人。你可以在同一个桌面应用里调用 GPT，也可以随时切回 DeepSeek。
+
+| 对比项 | **DeepSeek Harness GPT Desktop** | 官方 DeepSeek Harness | 官方 Codex |
+| --- | --- | --- | --- |
+| 产品定位 | **把 DSH 工作台和 Codex 接到一起的社区桌面版** | DeepSeek 官方开源 Agent Harness，强调一切皆插件 | OpenAI 官方编码 Agent，围绕代码理解、修改、测试和交付 |
+| 软件价格 | **代码与安装包免费** | 源码免费，MIT License | Codex 随 ChatGPT Free、Go、Plus、Pro、Business、Edu、Enterprise 提供 |
+| 模型费用 | GPT 路线复用现有 ChatGPT 计划和 Codex 用量，**不需要另配 OpenAI API Key**。切换到 DeepSeek 时仍按 DeepSeek 账号计费 | 模型费用跟随所选提供方，使用 DeepSeek 在线模型时需要对应 API Key 和额度 | Free 每月 0 美元，Go 每月 8 美元，Plus 每月 20 美元，Pro 每月 100 美元起。不同计划有各自用量和速率限制 |
+| 开箱即用的模型 | **GPT-5.6 Sol、Terra、Luna，加上 DeepSeek V4 Flash、V4 Pro** | 官方默认以 DeepSeek 模型为主，其他路线取决于已安装的提供方插件和配置 | GPT-5.6 系列与 Codex 专用模型，不提供 DeepSeek 模型切换 |
+| 模型切换体验 | **同一个下拉框切换 GPT 与 DeepSeek，继续使用 DSH 工作区和会话列表** | 能否切换更多提供方取决于插件和配置 | 在 OpenAI 提供的模型范围内选择，工作流以 Codex 为中心 |
+| 图片输入 | **支持 PNG、JPEG、WebP、GIF，图片可直接交给 GPT 识别** | 取决于模型与适配器是否声明图片能力 | 官方支持图片输入和视觉理解 |
+| 插件与扩展 | 保留 DSH 插件宿主。GPT 回合使用 Codex 自带工具、Skills、插件和 MCP，**一套界面连接两套扩展体系** | Cordis 插件架构是核心优势，官方仓库提供 `dsh-plugin` 生态入口 | 支持 Skills、插件、MCP、Tool Search，官方集成范围更完整 |
+| Agent 与工具 | GPT 路线由 Codex 执行文件、Shell、沙箱等工具，DSH 继续负责界面、会话和附件 | 工具能力由 DSH 插件和所选模型共同决定 | OpenAI 官方 Agent 工具、权限、沙箱、云任务与代码审查能力最完整 |
+| 桌面体验 | **提供 Windows EXE、Apple Silicon Mac 与 Intel Mac 安装包** | 官方入口以 `npx @deepseek-ai/dsh web` 启动本地 Web UI | 提供 ChatGPT/Codex 官方产品、Web、CLI、IDE 扩展和云端入口 |
+| 会话与工作区 | 保留 DSH 的工作区、会话记录和附件，同时用 Codex thread 续接 GPT 多轮上下文 | 原生 DSH 工作区和会话体系 | 原生 Codex 项目、聊天和云任务体系 |
+| 上手门槛 | **下载桌面包，登录 ChatGPT 后即可用 GPT。DeepSeek 按需再配 Key** | 需要 Node.js、命令行启动和模型提供方配置 | 官方客户端最省配置，开发者也可以选择 CLI、IDE 或 SDK |
+| 主要优势 | **适合已经买了 ChatGPT、又想在 DSH 里同时用中美两家模型的人** | 官方插件底层最原生，适合 Harness 开发者和插件作者 | 官方能力更新最快，Codex 功能覆盖最完整 |
+| 当前限制 | 社区桥接需要跟随 DSH 与 Codex 两边升级。音频、视频尚未接入，安装包没有商业签名 | 仍处于 Developer Preview，官方明确提示可能出现兼容性破坏 | 不提供 DSH 界面，也不能在同一模型菜单里切换到 DeepSeek |
+
+本项目的优势很具体。已经付费的 ChatGPT 用户可以把现有 Codex 用量放进 DSH，不必为了 GPT 路线再维护一套 OpenAI API Key。工作区、会话记录、附件和 DeepSeek 模型仍留在原来的界面里，减少了在两套工具之间反复切换的麻烦。
+
+对比依据更新于 2026 年 8 月 19 日。产品能力、价格和用量限制会调整，请以 [DeepSeek Harness 官方仓库](https://github.com/deepseek-ai/deepseek-harness)、[Codex 价格与计划](https://learn.chatgpt.com/docs/pricing)、[Codex CLI](https://learn.chatgpt.com/docs/codex/cli) 和 [Codex SDK](https://learn.chatgpt.com/docs/codex-sdk) 的最新说明为准。
+
 ## 它做了什么
 
 - 保留 DeepSeek Harness 原来的界面、工作区和会话记录。
