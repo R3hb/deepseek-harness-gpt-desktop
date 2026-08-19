@@ -1,5 +1,9 @@
 # DeepSeek Harness GPT Desktop
 
+<p align="center">
+  <img src="desktop/assets/icon.png" alt="DeepSeek Harness GPT Desktop" width="180">
+</p>
+
 手上已经买了 ChatGPT 会员，DeepSeek API 又觉得有点贵。于是我给刚开源的 DeepSeek Harness 接上了 OpenAI 官方 Codex 登录，再把它包成 Windows 和 macOS 桌面应用。
 
 模型下拉框里，DeepSeek V4 和 GPT-5.6 都在。中美两家 SOTA 模型一起伺候，岂不美哉。
