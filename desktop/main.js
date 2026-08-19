@@ -22,13 +22,13 @@ function defaultDshAppDir() {
 
 function defaultDshHome() {
   if (process.env.DSH_HOME) return process.env.DSH_HOME;
-  if (fs.existsSync(DEFAULT_HOME)) return DEFAULT_HOME;
+  if (process.platform === 'win32' && fs.existsSync(DEFAULT_HOME)) return DEFAULT_HOME;
   return path.join(app.getPath('userData'), 'data');
 }
 
 function defaultDshWorkspace() {
   if (process.env.DSH_WORKSPACE) return process.env.DSH_WORKSPACE;
-  if (fs.existsSync(DEFAULT_WORKSPACE)) return DEFAULT_WORKSPACE;
+  if (process.platform === 'win32' && fs.existsSync(DEFAULT_WORKSPACE)) return DEFAULT_WORKSPACE;
   return app.getPath('documents');
 }
 
@@ -234,6 +234,8 @@ function waitForHttp(url, timeoutMs) {
 
 function startDshServer() {
   return new Promise((resolve, reject) => {
+    fs.mkdirSync(DSH_HOME, { recursive: true });
+    fs.mkdirSync(DSH_WORKSPACE, { recursive: true });
     if (!checkPath(DSH_ENTRY, 'dsh bin.js')) return;
     if (!checkPath(DSH_HOME, 'DSH_HOME 数据目录')) return;
     if (!checkPath(CODEX_PATCH_TEMPLATE, 'ChatGPT 模型补丁')) return;
@@ -326,7 +328,7 @@ function createWindow() {
     minHeight: 700,
     title: 'DeepSeek Harness GPT',
     autoHideMenuBar: true,
-    icon: path.join(__dirname, 'assets', 'icon.ico'),
+    icon: path.join(__dirname, 'assets', process.platform === 'win32' ? 'icon.ico' : 'icon.png'),
     webPreferences: {
       contextIsolation: true,
       nodeIntegration: false,

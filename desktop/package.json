@@ -1,6 +1,6 @@
 {
   "name": "deepseek-harness-gpt-desktop",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "DeepSeek Harness desktop app driven by GPT through official Codex ChatGPT sign-in.",
   "main": "main.js",
   "scripts": {
@@ -8,7 +8,8 @@
     "start": "npm run prepare:runtime && electron .",
     "test": "npm --prefix codex-llm-plugin install --ignore-scripts --no-audit --no-fund && npm --prefix codex-llm-plugin test && node --check main.js && node --check scripts/prepare-runtime.mjs",
     "dist:dir": "npm run prepare:runtime && electron-builder --win dir",
-    "dist": "npm run prepare:runtime && electron-builder --win nsis"
+    "dist": "npm run prepare:runtime && electron-builder --win nsis",
+    "dist:mac": "npm run prepare:runtime && electron-builder --mac dmg zip"
   },
   "author": "R3hb",
   "license": "MIT",
@@ -49,6 +50,17 @@
         "nsis"
       ],
       "icon": "assets/icon.ico"
+    },
+    "mac": {
+      "target": [
+        "dmg",
+        "zip"
+      ],
+      "icon": "assets/icon.png",
+      "category": "public.app-category.developer-tools",
+      "artifactName": "DeepSeek-Harness-GPT-${version}-mac-${arch}.${ext}",
+      "identity": "-",
+      "hardenedRuntime": false
     },
     "nsis": {
       "artifactName": "DeepSeek-Harness-GPT-Setup-${version}.${ext}",

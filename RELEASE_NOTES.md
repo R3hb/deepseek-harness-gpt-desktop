@@ -1,3 +1,10 @@
+# v1.2.0
+
+- 新增 macOS Apple Silicon 与 Intel 双架构安装包。
+- 增加 GitHub Actions macOS 原生构建流程，分别生成 DMG 与 ZIP。
+- 首次启动时自动创建本地数据目录，避免新 Mac 因目录不存在而启动失败。
+- macOS 使用临时签名，尚未经过 Apple 公证。
+
 # v1.1.0
 
 首个公开版本。
