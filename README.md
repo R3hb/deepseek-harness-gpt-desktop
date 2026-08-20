@@ -41,6 +41,7 @@
 - 支持 GPT-5.6 Sol、Terra 和 Luna。
 - 直接复用 Codex 的 ChatGPT 登录，无需另外填写 OpenAI API Key。
 - 支持在 Harness 中粘贴或添加 PNG、JPEG、WebP、GIF 图片并交给 GPT 识别。
+- 内置 DeepSeek Harness 0.1.0-rc.8，支持增强的多模态命令、文件与会话引用，以及 Windows 持久 PowerShell 会话。
 - 使用 Electron 打包成 Windows 和 macOS 桌面应用，关闭窗口时一并清理本地服务。
 - DeepSeek V4 Flash 与 V4 Pro 仍然保留，需要时可以随时切回。
 
@@ -80,7 +81,7 @@ npm test
 npm run dist
 ```
 
-`npm run dist` 会先准备 DeepSeek Harness rc.7、Codex SDK 0.147.0 与本地适配器，再生成 NSIS 安装包。
+`npm run dist` 会先准备 DeepSeek Harness rc.8、Codex SDK 0.147.0 与本地适配器 0.3.0，再生成 NSIS 安装包。
 
 macOS 使用下面的命令。Apple Silicon 选择 `--arm64`，Intel Mac 选择 `--x64`。
 
@@ -109,6 +110,8 @@ npm start
 
 ## 已知限制
 
+- DeepSeek Harness rc.8 目前位于 NPM `next` 通道和 GitHub Pre-release。项目使用精确版本固定，不会自动跟随后续预发布版。
+- rc.8 的 SQLite 数据结构与 rc.7 不兼容。覆盖安装前应当退出应用并备份 `DSH_HOME`，旧版本不能直接读取经过 rc.8 写入的数据目录。
 - 当前只支持图片输入，不支持音频和视频附件。
 - Codex 自带 Agent 指令和工具，单轮仍有较大的上下文基线。
 - 本机实测 GPT-5.6 Sol 首次响应约需五十到六十秒，速度会受账号、网络与任务复杂度影响。

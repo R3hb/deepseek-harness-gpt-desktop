@@ -1,0 +1,83 @@
+/* Keep third-party sidebar actions aligned with the stock DSH footer. */
+[data-slot='sidebar.footer.action'] {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto !important;
+  align-items: center !important;
+  gap: 6px !important;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+#dsb-balance-readout[title='no-api-key'] {
+  display: none !important;
+}
+
+[data-slot='sidebar.footer.action'] > button[aria-label='导入会话'] {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 36px !important;
+  height: 36px !important;
+  padding: 0 10px !important;
+  border-radius: 10px !important;
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  transition: background-color 120ms ease, color 120ms ease !important;
+}
+
+[data-slot='sidebar.footer.action'] > div:has(> button[aria-label='移动端远程控制']) {
+  display: flex !important;
+  width: auto !important;
+  height: 36px !important;
+  gap: 4px !important;
+  align-items: center !important;
+}
+
+[data-slot='sidebar.footer.action'] button[aria-label*='检查更新'],
+[data-slot='sidebar.footer.action'] button[aria-label='移动端远程控制'],
+[data-slot='sidebar.footer.action'] > button[aria-label='番茄钟'] {
+  box-sizing: border-box !important;
+  width: 36px !important;
+  min-width: 36px !important;
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: transparent !important;
+  color: var(--dsw-alias-label-secondary) !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transition: background-color 120ms ease, color 120ms ease !important;
+}
+
+[data-slot='sidebar.footer.action'] > button[aria-label='导入会话']:hover,
+[data-slot='sidebar.footer.action'] button[aria-label*='检查更新']:hover,
+[data-slot='sidebar.footer.action'] button[aria-label='移动端远程控制']:hover,
+[data-slot='sidebar.footer.action'] > button[aria-label='番茄钟']:hover {
+  background: var(--dsw-alias-interactive-bg-hover) !important;
+  color: var(--dsw-alias-label-primary) !important;
+}
+
+[data-slot='sidebar.footer.action'] > button[aria-label='导入会话']:focus-visible,
+[data-slot='sidebar.footer.action'] button[aria-label*='检查更新']:focus-visible,
+[data-slot='sidebar.footer.action'] button[aria-label='移动端远程控制']:focus-visible,
+[data-slot='sidebar.footer.action'] > button[aria-label='番茄钟']:focus-visible {
+  outline: 2px solid var(--dsw-alias-brand-primary) !important;
+  outline-offset: 2px !important;
+}
+
+[data-slot='sidebar.footer.action'] .pomo-toggle-text {
+  display: none !important;
+}
+
+[data-slot='sidebar.footer.action'] .pomo-toggle-emoji {
+  font-size: 16px !important;
+  line-height: 1 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  [data-slot='sidebar.footer.action'] button {
+    transition: none !important;
+  }
+}

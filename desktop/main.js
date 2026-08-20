@@ -46,6 +46,7 @@ const CODEX_PLUGIN = path.join(
 const CODEX_PATCH_TEMPLATE = app.isPackaged
   ? path.join(process.resourcesPath, 'codex.patch.yml')
   : path.join(__dirname, 'codex.patch.yml');
+const DESKTOP_COMPAT_CSS = path.join(__dirname, 'assets', 'desktop-compat.css');
 const START_TIMEOUT_MS = 45 * 1000;
 const CODEX_LOGIN_TIMEOUT_MS = 10 * 60 * 1000;
 
@@ -321,6 +322,7 @@ function killServer() {
 }
 
 function createWindow() {
+  const desktopCompatCss = fs.readFileSync(DESKTOP_COMPAT_CSS, 'utf8');
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
@@ -358,6 +360,12 @@ function createWindow() {
   mainWindow.webContents.on('page-title-updated', (event) => {
     event.preventDefault();
     mainWindow.setTitle('DeepSeek Harness GPT');
+  });
+
+  mainWindow.webContents.on('did-finish-load', () => {
+    void mainWindow.webContents.insertCSS(desktopCompatCss).catch((error) => {
+      console.warn(`无法应用桌面兼容样式：${error.message}`);
+    });
   });
 
   mainWindow.on('closed', () => {

@@ -2,6 +2,8 @@
 
 本仓库是社区项目，与 DeepSeek、深度求索、OpenAI 以及下列插件作者没有隶属、合作或官方背书关系。
 
+DeepSeek 官方允许在说明文字中准确描述项目与 DeepSeek Harness 的关系，同时建议社区项目命名使用 `DSH` 缩写，并避免在项目名中直接使用完整注册商标。当前项目名称尚未调整，后续命名决定将单独处理。详见 [DeepSeek Harness 品牌使用规范](https://github.com/deepseek-ai/deepseek-harness/blob/dsh-v0.1.0-rc.8/BRAND_GUIDELINES.md)。
+
 ## 基础项目
 
 - [deepseek-ai/deepseek-harness](https://github.com/deepseek-ai/deepseek-harness) 由 deepseek-ai 发布，采用 MIT License。
